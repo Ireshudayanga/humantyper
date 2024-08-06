@@ -78,43 +78,66 @@ export function activate(context: vscode.ExtensionContext) {
                     function typeNextCharacter() {
                         if (currentLineIndex < lines.length) {
                             const currentLine = lines[currentLineIndex];
-                            const nextChar = currentLine[currentTextIndex];
+                            if (currentTextIndex < currentLine.length) {
+                                const nextChar = currentLine[currentTextIndex];
 
-                            // Ensure the editor and document are still valid
-                            const currentEditor = vscode.window.activeTextEditor;
-                            if (currentEditor && currentEditor.document === document) {
-                                currentEditor.edit(editBuilder => {
-                                    editBuilder.insert(selection.active, nextChar);
-                                }).then(success => {
-                                    if (success) {
-                                        // Move the cursor forward after each character
-                                        const newPosition = selection.active.translate(0, 1);
-                                        selection = new vscode.Selection(newPosition, newPosition);
-                                        currentEditor.selection = selection;
+                                console.log('Current line index:', currentLineIndex);
+                                console.log('Current text index:', currentTextIndex);
+                                console.log('Next char:', nextChar);
 
-                                        currentTextIndex++;
-                                        if (currentTextIndex >= currentLine.length) {
-                                            currentTextIndex = 0;
-                                            currentLineIndex++;
-                                            if (currentLineIndex < lines.length) {
-                                                // Move cursor to the start of the next line
-                                                const newLinePosition = new vscode.Position(selection.active.line + 1, 0);
-                                                if (newLinePosition.line < document.lineCount) {
-                                                    selection = new vscode.Selection(newLinePosition, newLinePosition);
-                                                    currentEditor.selection = selection;
-                                                    currentEditor.revealRange(new vscode.Range(newLinePosition, newLinePosition));
-                                                } else {
-                                                    vscode.window.showInformationMessage('Finished typing all lines.');
-                                                    return; // Stop typing if we exceed the number of lines
-                                                }
-                                            }
+                                const currentEditor = vscode.window.activeTextEditor;
+                                if (currentEditor && currentEditor.document === document) {
+                                    currentEditor.edit(editBuilder => {
+                                        editBuilder.insert(selection.active, nextChar);
+                                    }).then(success => {
+                                        if (success) {
+                                            // Move the cursor forward after each character
+                                            const newPosition = selection.active.translate(0, 1);
+                                            selection = new vscode.Selection(newPosition, newPosition);
+                                            currentEditor.selection = selection;
+
+                                            currentTextIndex++;
+                                            setTimeout(typeNextCharacter, typingSpeed);
+                                        } else {
+                                            vscode.window.showErrorMessage('Failed to insert text.');
                                         }
-                                        setTimeout(typeNextCharacter, typingSpeed);
-                                    } else {
-                                        vscode.window.showErrorMessage('Failed to insert text.');
-                                    }
-                                });
+                                    });
+                                } else {
+                                    console.error('Editor is not valid or document is incorrect.');
+                                    vscode.window.showErrorMessage('Editor is not valid or document is incorrect.');
+                                    return;
+                                }
+                            } else {
+                                // Move to the next line
+                                currentLineIndex++;
+                                currentTextIndex = 0;
+
+                                const currentEditor = vscode.window.activeTextEditor;
+                                if (currentEditor && currentEditor.document === document) {
+                                    // Insert a new line
+                                    currentEditor.edit(editBuilder => {
+                                        editBuilder.insert(selection.active, '\n');
+                                    }).then(success => {
+                                        if (success) {
+                                            // Move the cursor to the start of the next line
+                                            const newLinePosition = new vscode.Position(selection.active.line + 1, 0);
+                                            selection = new vscode.Selection(newLinePosition, newLinePosition);
+                                            currentEditor.selection = selection;
+                                            currentEditor.revealRange(new vscode.Range(newLinePosition, newLinePosition));
+                                            setTimeout(typeNextCharacter, typingSpeed);
+                                        } else {
+                                            vscode.window.showErrorMessage('Failed to insert new line.');
+                                        }
+                                    });
+                                } else {
+                                    console.error('Editor is not valid or document is incorrect.');
+                                    vscode.window.showErrorMessage('Editor is not valid or document is incorrect.');
+                                    return;
+                                }
                             }
+                        } else {
+                            console.log('All lines have been processed.');
+                            vscode.window.showInformationMessage('Finished typing all lines.');
                         }
                     }
 
@@ -133,4 +156,4 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-export function deactivate() { }
+export function deactivate() {}
