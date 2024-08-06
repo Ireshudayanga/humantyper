@@ -2,7 +2,7 @@
   "name": "humantyper",
   "displayName": "HumanTyper",
   "description": "HumanTyper is a VS Code extension designed to simulate typing in the editor like a human. Whether you’re demonstrating code examples, creating tutorials, or just need a little extra automation, TypeSim inserts text at your cursor with a realistic typing effect. Customize the typing speed and watch as your code or text appears character by character, just like a human would type.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "IreshUdayanga",
   "engines": {
     "vscode": "^1.91.0"
