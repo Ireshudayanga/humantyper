@@ -21,7 +21,8 @@ HumanTyper is a VS Code extension that simulates human-like typing in the editor
 
 ## Contributing
 
-Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md) for more information.
+Contributions are welcome! Please read the contributing guidelines in the project repository.
+
 
 ## License
 
