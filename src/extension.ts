@@ -19,20 +19,20 @@ export function activate(context: vscode.ExtensionContext) {
 
             // Use the first workspace folder
             const workspaceFolder = workspaceFolders[0].uri.fsPath;
-            //console.log('Using workspace folder:', workspaceFolder);
+            console.log('Using workspace folder:', workspaceFolder);
 
             const tempFilePath = path.join(workspaceFolder, '.vscode', 'tempInput.txt');
 
             // Ensure the .vscode directory exists
             const vscodeDir = path.dirname(tempFilePath);
             if (!fs.existsSync(vscodeDir)) {
-                //console.log('Creating .vscode directory at:', vscodeDir);
+                console.log('Creating .vscode directory at:', vscodeDir);
                 fs.mkdirSync(vscodeDir, { recursive: true });
             }
 
             // Create the temp file if it doesn't exist
             if (!fs.existsSync(tempFilePath)) {
-               // console.log('Creating temp file at:', tempFilePath);
+                console.log('Creating temp file at:', tempFilePath);
                 fs.writeFileSync(tempFilePath, '', 'utf8');  // Create an empty file
             }
 
@@ -44,10 +44,10 @@ export function activate(context: vscode.ExtensionContext) {
 
             // Wait for the user to save the document
             const onDidSaveTextDocument = vscode.workspace.onDidSaveTextDocument(async (doc) => {
-                //console.log('Document saved:', doc.uri.fsPath);
+                console.log('Document saved:', doc.uri.fsPath);
                 if (doc.uri.fsPath === tempFilePath) {
                     const userInput = doc.getText();
-                    //console.log('User input:', userInput);
+                    console.log('User input:', userInput);
 
                     // Optionally, delete the temporary file
                     fs.unlink(tempFilePath, (err) => {
@@ -66,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
                     // Read typing speed from configuration
                     const config = vscode.workspace.getConfiguration('humantyper');
                     const typingSpeed = config.get<number>('typingSpeed', 100);
-                   // console.log('Typing speed:', typingSpeed);
+                    console.log('Typing speed:', typingSpeed);
 
                     const lines = userInput.split('\n');
                     let currentLineIndex = 0;
@@ -79,7 +79,6 @@ export function activate(context: vscode.ExtensionContext) {
                         if (currentLineIndex < lines.length) {
                             const currentLine = lines[currentLineIndex];
                             const nextChar = currentLine[currentTextIndex];
-                            //console.log('Typing character:', nextChar);
 
                             // Ensure the editor and document are still valid
                             const currentEditor = vscode.window.activeTextEditor;
@@ -99,9 +98,15 @@ export function activate(context: vscode.ExtensionContext) {
                                             currentLineIndex++;
                                             if (currentLineIndex < lines.length) {
                                                 // Move cursor to the start of the next line
-                                                const newPosition = new vscode.Position(selection.active.line + 1, 0);
-                                                selection = new vscode.Selection(newPosition, newPosition);
-                                                currentEditor.selection = selection;
+                                                const newLinePosition = new vscode.Position(selection.active.line + 1, 0);
+                                                if (newLinePosition.line < document.lineCount) {
+                                                    selection = new vscode.Selection(newLinePosition, newLinePosition);
+                                                    currentEditor.selection = selection;
+                                                    currentEditor.revealRange(new vscode.Range(newLinePosition, newLinePosition));
+                                                } else {
+                                                    vscode.window.showInformationMessage('Finished typing all lines.');
+                                                    return; // Stop typing if we exceed the number of lines
+                                                }
                                             }
                                         }
                                         setTimeout(typeNextCharacter, typingSpeed);
