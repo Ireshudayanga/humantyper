@@ -18,6 +18,7 @@ HumanTyper is a VS Code extension that simulates human-like typing in the editor
 
 - Activate HumanTyper by using the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and typing "Type Text"
 - Configure typing speed in the settings
+- Stop HumanTyper by using `Enter` key
 
 ## Contributing
 
