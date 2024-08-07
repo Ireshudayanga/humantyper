@@ -72,10 +72,37 @@ export function activate(context: vscode.ExtensionContext) {
                     let currentLineIndex = 0;
                     let currentTextIndex = 0;
 
+                    // Close the temporary document
+                    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
                     // Re-focus the original document
                     await vscode.window.showTextDocument(document);
 
+                    let shouldStopTyping = false;
+
+                       // Listen for escape or enter key presses to stop typing
+                       const keyListener = vscode.window.onDidChangeTextEditorSelection(event => {
+                        if (event.textEditor === editor) {
+                            // Check if the Esc or Enter key is pressed
+                            const selections = event.selections;
+                            for (let sel of selections) {
+                                const charBefore = document.getText(new vscode.Range(sel.active.translate(0, -1), sel.active));
+                                if (charBefore === '\n') { // Enter key detection
+                                    shouldStopTyping = true;
+                                    break;
+                                }
+                            }
+
+                            
+                        }
+                    });
+
+
                     function typeNextCharacter() {
+                        if (shouldStopTyping) {
+                            vscode.window.showInformationMessage('Typing simulation stopped.');
+                            keyListener.dispose();
+                            return;
+                        }
                         if (currentLineIndex < lines.length) {
                             const currentLine = lines[currentLineIndex];
                             if (currentTextIndex < currentLine.length) {
@@ -156,4 +183,4 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }
