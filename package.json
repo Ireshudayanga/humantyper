@@ -30,8 +30,17 @@
         "command": "extension.typeText",
         "title": "Type Text"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.typeText",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
+        "when": "editorTextFocus"
+      }
     ]
   },
+
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
